@@ -1,0 +1,10 @@
+.env
+**/*.swp
+.swp
+
+/vendor/
+/assets/
+/admin/assets/
+lib/
+/logs
+/public/assets
