@@ -11,10 +11,10 @@ class User extends Models
     public int $id;
     public int $mobile;
     public string $password;
-    public string $referal_code;
+    public string $referral_code;
     public int | null $otp;
     public int | null $referred_by;
-    public string $referal_qr;
+    public string $reffrel_qr;
     public string | null $invite_code;
     public string $is_banned;
 }
