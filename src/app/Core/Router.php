@@ -3,9 +3,12 @@
 namespace App\Core;
 
 use App\Core\Exceptions\RouterControllerException;
+use App\Core\Exceptions\RouterException;
 use App\Core\Exceptions\RouterMethodException;
 use App\Core\Middleware;
 use App\Core\Interfaces\RouterInterface;
+use App\Core\Request;
+use Throwable;
 
 class Router implements RouterInterface
 {
@@ -53,7 +56,11 @@ class Router implements RouterInterface
     ): Router
     {
         array_push(
-            $this->routes[count($this->routes) - 1]["middleware"],
+            $this->routes[
+                count($this->routes) - 1
+            ][
+                "middleware"
+            ],
             $middleware
         );
         return $this;
@@ -67,7 +74,13 @@ class Router implements RouterInterface
         $isFound = false;
         foreach($this->routes as $route)
         {
-            if($this->didRouteMatch($route, $url, $method))
+            if(
+                $this->didRouteMatch(
+                    $route,
+                    $url,
+                    $method
+                )
+            )
             {
                 $isFound = true;
                 $class = $route["controller"][0];
@@ -129,7 +142,7 @@ class Router implements RouterInterface
         $container = new Container();
         $newController = $container->get($class);
 
-        $request = new Request();
+        $request = $container->get(Request::class);
         $newController->$classMethod($request);
     }
 
@@ -150,7 +163,11 @@ class Router implements RouterInterface
         {
             foreach(Middleware::$middlewares as $middleware)
             {
-                if($this->didMiddleWareMatch($routeMiddleware, $middleware["name"]))
+                if(
+                    $this->didMiddleWareMatch(
+                        $routeMiddleware, $middleware["name"]
+                    )
+                )
                 {
                     $this->callMiddleWare($middleware);
                 }
@@ -176,16 +193,28 @@ class Router implements RouterInterface
         array $middleware,
     ): void
     {
-        if(class_exists($middleware["class"]))
-        {
-            if(method_exists($middleware["class"], "handle"))
+        try {
+            if(
+                class_exists($middleware["class"])
+            )
             {
-                if(Middleware::$isContinue)
+                if(
+                    method_exists(
+                        $middleware["class"], "handle"
+                    )
+                )
                 {
-                    $newMiddleWare = new $middleware["class"];
-                    $newMiddleWare->handle();
+                    if(Middleware::$isContinue)
+                    {
+                        $newMiddleWare = new $middleware["class"];
+                        $newMiddleWare->handle();
+                    }
                 }
             }
+        } catch (Throwable $th) {
+            throw new RouterException(
+                "Middleware Error: " . $th->getMessage()
+            );
         }
     }
 }
