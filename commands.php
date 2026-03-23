@@ -8,9 +8,17 @@ $isCommandFound = false;
 $command = $argv[1];
 $file = "";
 
+if(!isset($argv[1]))
+{
+    echo "Error: No Command provided";
+    return;
+}
 if(isset($argv[2]))
 {
     $file = $argv[2] . ".php";
+}else {
+    echo "Error: No name found";
+    return;
 }
 
 $commandList = [
