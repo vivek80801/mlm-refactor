@@ -14,6 +14,11 @@ interface ModelsInterface
         string $sql,
         string $fetchType = "single",
         array $args = []
-    ): array;
+    ): mixed ;
 
+    public static function where
+    (
+        string $column,
+        mixed $value
+    ): ?static;
 }

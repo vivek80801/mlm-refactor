@@ -6,7 +6,7 @@ use App\Core\Models;
 
 class  Product extends Models
 {
-    protected static string $table = 'products';
+    protected static string $table = 'product';
 
     public int $id;
     public string $product_name;

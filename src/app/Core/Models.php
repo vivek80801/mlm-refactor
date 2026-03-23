@@ -80,16 +80,34 @@ abstract class Models implements ModelsInterface
         string $sql,
         string $fetchType = "single",
         array $args = []
-    ): array
+    ) : mixed
     {
         $pdo = DataBase::getConnection();
         $stmt = $pdo->prepare($sql);
         $stmt->execute($args);
+        $data = [];
         if($fetchType === "multi")
         {
-            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }else {
-            return $stmt->fetch(PDO::FETCH_ASSOC);
+            $data = $stmt->fetch(PDO::FETCH_ASSOC);
         }
+        return $data;
+    }
+
+    public static function where
+    (
+        string $column,
+        $value
+    ): ?static
+    {
+        $pdo = DataBase::getConnection();
+        $stmt = $pdo->prepare("SELECT * FROM ". static::$table . " WHERE " . $column . " = :value");
+        $stmt->bindValue(":value", $value);
+        $stmt->execute();
+
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $data ? static::mapToObject($data) : null;
     }
 }

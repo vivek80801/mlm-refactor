@@ -84,3 +84,44 @@ function redirect(string $url)
     header("location: " . $url);
 }
 
+function generateRandomHelper(
+    int $len,
+    string $chars
+) {
+    $result = "";
+    for($i = 0; $i < $len; $i++)
+    {
+        $result .= $chars[rand(0, strlen($chars))];
+    }
+    return $result;
+}
+
+function generateRandomStr(int $len)
+{
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    return generateRandomHelper($len, $chars);
+}
+
+function generateRandomNum(int $len)
+{
+    $chars = "01234567890";
+    return (int) generateRandomHelper($len, $chars);
+}
+
+function generateRandomNumWithStr(int $len)
+{
+    $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
+    return (int) generateRandomHelper($len, $chars);
+}
+
+function generateRandomWhole(int $len)
+{
+    $chars = "
+    abcdefghjklmnopqrstuvwxyz
+    ABCDEFGHIJKLMNOPRSTUVWXYZ
+    01234567890
+    `~!@#$%^&*()-_=+[]{}\\|'\";:.<>,/
+    ";
+    return (int) generateRandomHelper($len, $chars);
+}
+
