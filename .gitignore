@@ -5,6 +5,6 @@
 /vendor/
 /assets/
 /admin/assets/
-lib/
+src/lib/
 /logs
 /public/assets
