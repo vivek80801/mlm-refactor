@@ -3,12 +3,16 @@
 namespace App\Core;
 
 use App\Core\DataBase;
+use App\Core\Exceptions\AppException;
 use App\Core\Interfaces\ModelsInterface;
 use PDO;
+use Throwable;
 
 abstract class Models implements ModelsInterface
 {
     protected static string $table;
+    protected array $fields = [];
+    protected array $fillable = [];
 
     public static function find
     (
@@ -16,7 +20,11 @@ abstract class Models implements ModelsInterface
     ): ?static
     {
         $pdo = DataBase::getConnection();
-        $stmt = $pdo->prepare("SELECT * FROM ". static::$table . " WHERE id=:id");
+        $stmt = $pdo->prepare("
+            SELECT * FROM ". static::$table . " 
+            WHERE id=:id
+            "
+        );
         $stmt->bindValue(":id", $id);
         $stmt->execute();
 
@@ -43,37 +51,69 @@ abstract class Models implements ModelsInterface
     public function save(): bool
     {
         $pdo = DataBase::getConnection();
-        $fields = get_object_vars($this);
-        $columns = array_keys($fields);
+        $allVars = get_object_vars($this);
+        $columns = empty($this->fillable) 
+            ? array_filter(
+                array_keys($allVars),
+                fn($key) =>
+                !in_array($key,
+                    ['fields', 'fillable']
+                )
+            )
+            : $this->fillable;
 
-        if(isset($this->id))
+        $params = [];
+        foreach ($columns as $col)
         {
-            $query = "UPDATE " . static::$table .
-                " SET " . 
-                implode(
-                    ", ",
-                    array_map(
-                        fn($col)
-                        => 
-                        "$col = :$col", $columns
-                    )
-                ) . " WHERE id = :id";
+            $params[":$col"] = $this->$col ?? null;
+        }
+
+        if (isset($this->id))
+        {
+            $params[':id'] = $this->id;
+            $colSql = array_map(
+                fn($col) => 
+                    "$col = :$col",
+                    array_filter($columns,
+                    fn($c) => $c !== 'id')
+            );
+
+            $query = "
+                UPDATE " . static::$table . " 
+                SET " . implode(", ", $colSql) . " 
+                WHERE id = :id
+                "
+            ;
         } else {
-            $query = "INSERT INTO " . static::$table . 
-                " (" . implode(
-                    ", ",
-                    $columns
-                ) . ") VALUES (" . implode(
-                    ", ",
-                    array_map(
-                        fn($col) 
-                        => ":$col", $columns
-                    )
-                ) . ")";
+            $query = "
+                INSERT INTO " . static::$table . " 
+                (" . 
+                    implode(", ", $columns) . ")
+                    VALUES (:" .
+                    implode(", :", $columns) . ")
+                "
+            ;
         }
 
         $stmt = $pdo->prepare($query);
-        return $stmt->execute($fields);
+        $isSave = $stmt->execute($params);
+    
+
+        if(!$isSave)
+        {
+            throw new AppException(
+                "Database Save Error: " . implode(
+                    ", ", $stmt->errorInfo()
+                )
+            );
+        } 
+
+        if($isSave && !isset($this->id))
+        {
+            $this->id = (int) $pdo->lastInsertId();
+        }
+
+        return $isSave;
     }
 
     public static function sql(
@@ -95,19 +135,110 @@ abstract class Models implements ModelsInterface
         return $data;
     }
 
-    public static function where
-    (
+    public static function query(): static
+    {
+        return new static();
+    }
+
+    public function where(
         string $column,
-        $value
-    ): ?static
+        mixed $value
+    ): static
+    {
+        $this->fields[$column] = $value;
+        return $this;
+    }
+
+    public function get(): array
     {
         $pdo = DataBase::getConnection();
-        $stmt = $pdo->prepare("SELECT * FROM ". static::$table . " WHERE " . $column . " = :value");
-        $stmt->bindValue(":value", $value);
-        $stmt->execute();
+    
+        $sql = "SELECT * FROM " . static::$table;
+    
+        if (!empty($this->fields))
+        {
+            $conditions = [];
+    
+            foreach ($this->fields as $key => $value)
+            {
+                $conditions[] = "$key = :$key";
+            }
+    
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+    
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($this->fields);
+    
+        $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        return array_map(fn($row) => static::mapToObject($row), $data);
+    }
 
-        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    public static function transaction(
+        callable $callback
+    ): mixed
+    {
+        $pdo = DataBase::getConnection();
+    
+        $isOuter = false;
+    
+        try {
+            if (!$pdo->inTransaction())
+            {
+                $pdo->beginTransaction();
+                $isOuter = true;
+            }
+    
+            $result = $callback();
+    
+            if ($isOuter)
+            {
+                $pdo->commit();
+            }
+    
+            return $result;
+    
+        } catch (Throwable $e){
+            if ($pdo->inTransaction())
+            {
+                $pdo->rollBack();
+            }
+    
+            throw new AppException(
+                "Database Transaction Error: " . $e->getMessage(),
+                previous: $e
+            );
+        }
+    }
 
-        return $data ? static::mapToObject($data) : null;
+    public static function transactionBegin(): void
+    {
+        $pdo = DataBase::getConnection();
+    
+        if (!$pdo->inTransaction())
+        {
+            $pdo->beginTransaction();
+        }
+    }
+    
+    public static function transactionCommit(): void
+    {
+        $pdo = DataBase::getConnection();
+    
+        if ($pdo->inTransaction())
+        {
+            $pdo->commit();
+        }
+    }
+    
+    public static function transactionRollBack(): void
+    {
+        $pdo = DataBase::getConnection();
+    
+        if ($pdo->inTransaction())
+        {
+            $pdo->rollBack();
+        }
     }
 }

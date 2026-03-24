@@ -18,8 +18,7 @@ class Container
     {
         $className = $this->bindings[$className] ?? $className;
     
-        if (isset($this->instances[$className]))
-        {
+        if (isset($this->instances[$className])) {
             return $this->instances[$className];
         }
 
@@ -31,16 +30,14 @@ class Container
 
         $this->resolving[] = $className;
 
-        if (!class_exists($className))
-        {
+        if (!class_exists($className)) {
             throw new AppException("Class {$className} does not exist");
         }
     
         $reflector = new ReflectionClass($className);
         $constructor = $reflector->getConstructor();
     
-        if ($constructor === null)
-        {
+        if ($constructor === null) {
             return new $className;
         }
     
@@ -103,8 +100,8 @@ class Container
         string $concrete
     ): void
     {
-        if (!is_a($concrete, $abstract, true))
-        {
+
+        if (!is_a($concrete, $abstract, true)) {
             throw new AppException(
                 "{$concrete} must implement {$abstract}"
             );

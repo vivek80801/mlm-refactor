@@ -16,9 +16,10 @@ interface ModelsInterface
         array $args = []
     ): mixed ;
 
-    public static function where
+    public function where
     (
         string $column,
         mixed $value
-    ): ?static;
+    ): static;
+    public function get(): array;
 }

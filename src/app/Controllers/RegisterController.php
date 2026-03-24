@@ -43,7 +43,12 @@ class RegisterController extends Controller
             ]);
         }
 
-        $user = User::where("mobile", $request->input("mobile"));
+        $user = User::query()
+            ->where(
+                "mobile",
+                $request->input("mobile")
+            )
+            ->get();
 
         if($user)
         {

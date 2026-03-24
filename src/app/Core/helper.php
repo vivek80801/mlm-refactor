@@ -104,14 +104,14 @@ function generateRandomStr(int $len)
 
 function generateRandomNum(int $len)
 {
-    $chars = "01234567890";
+    $chars = "0123456789";
     return (int) generateRandomHelper($len, $chars);
 }
 
 function generateRandomNumWithStr(int $len)
 {
     $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890";
-    return (int) generateRandomHelper($len, $chars);
+    return generateRandomHelper($len, $chars);
 }
 
 function generateRandomWhole(int $len)
