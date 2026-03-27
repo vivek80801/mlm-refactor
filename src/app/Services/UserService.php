@@ -21,13 +21,40 @@ class UserService
         Request $request
     ): void
     {
-        $referedByUser = User::query()
-            ->where(
-            "referral_code",
-            $request->input("referred_by")
-        )->get()[0];
 
         try{
+            $userQuery = User::query()
+                ->where(
+                    "mobile",
+                    $request->input("mobile")
+                )
+                ->get();
+
+            if(count($userQuery) > 0)
+            {
+                $user = $userQuery[0];
+                if($user)
+                {
+                    throw new AppException(
+                        "User Service Error: User already exists"
+                    );
+                }
+            }
+
+            $referedByUser = null;
+            $referedByUserQuery = User::query()
+                ->where(
+                "referral_code",
+                $request->input("referred_by")
+            )->get();
+
+            if(count($referedByUserQuery))
+            {
+                $referedByUser = $referedByUserQuery[0];
+            }else {
+                throw new AppException("Invalid Referal Code");
+            }
+
             User::transactionBegin();
 
             $newUser = $this->createUser(

@@ -3,10 +3,11 @@
 namespace App\Controllers;
 
 use App\Core\Controller;
+use App\Core\Exceptions\AppException;
 use App\Core\Request;
 use App\Core\Validator;
-use App\Models\User;
 use App\Services\UserService;
+use Throwable;
 
 class RegisterController extends Controller
 {
@@ -43,22 +44,21 @@ class RegisterController extends Controller
             ]);
         }
 
-        $user = User::query()
-            ->where(
-                "mobile",
-                $request->input("mobile")
-            )
-            ->get();
+         try {
+            $this->userService->register($request);
 
-        if($user)
-        {
+            return redirect("/login");
+
+        } catch (AppException $e) {
             return view("register", [
-                "errors" => "user already exists"
+                "errors" => $e->getMessage()
+            ]);
+
+        } catch (Throwable $e) {
+            return view("register", [
+                "errors" => "Something went wrong"
             ]);
         }
-
-        $this->userService
-            ->register($request);
 
         return redirect("/login");
     }
