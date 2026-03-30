@@ -17,4 +17,17 @@ class  UserWalletService
         $wallet->type = "cr";
         $wallet->save();
     }
+    public function updateWallet
+    (
+        int $walletId,
+        int $userId,
+        int $amount
+    )
+    {
+        $wallet = new Wallet();
+        $wallet->id = $walletId;
+        $wallet->user_id = $userId;
+        $wallet->amount = $amount;
+        $wallet->save();
+    }
 }

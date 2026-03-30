@@ -6,7 +6,7 @@ use App\Core\Models;
 
 class  ProductPurchase extends Models
 {
-    protected static string $table = 'productPurchases';
+    protected static string $table = 'product_purchases';
 
     public int $id;
     public int $user_id;

@@ -4,16 +4,21 @@
     $is_hero_purchased_product = $data["is_hero_purchased_product"];
 ?>
 <div class="container my-3">
-    <form method="post" action="./product_detail?id=<?= $product["id"] ?>" >
+    <form method="post" action="/product_rental" >
         <h1>Rental Device</h1>
-            <img src="./assets/uploads/products/<?= $product["image"] ?>" width="100" />
-           <h3 class="my-3"><?= $product["product_name"] ?></h3>
-        <input type="hidden" >
+        <?php if(!empty($data["errors"])): ?>
+            <div class="alert alert-danger">
+                <span ><?= $data["errors"] ?></span>
+            </div>
+        <?php endif; ?>
+            <img src="./assets/uploads/products/<?= $product->image ?>" width="100" />
+           <h3 class="my-3"><?= $product->product_name ?></h3>
+        <input type="hidden" name="product_id" value="<?= $product->id ?>" >
         <ul class="list-group">
-         <li class="list-group-item"> The Price: <?= $product["price"] ?></li>
-          <li class="list-group-item">Cycle: <?= $product["cycle"] ?> Day</li>
-          <li class="list-group-item">Daily Income: <?= $product["daily_income"] ?></li>
-          <li class="list-group-item">Total Income: <?= $product["total_income"] ?></li>
+            <li class="list-group-item"> The Price: &#8377;<?= $product->price ?></li>
+            <li class="list-group-item">Cycle: <?= $product->cycle ?> Day</li>
+            <li class="list-group-item">Daily Income: &#8377;<?= $product->daily_income ?></li>
+            <li class="list-group-item">Total Income: &#8377;<?= $product->total_income ?></li>
         </ul>
 </br>
              <?php if($is_hero_purchased_product): ?>

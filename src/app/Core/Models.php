@@ -171,7 +171,7 @@ abstract class Models implements ModelsInterface
         $stmt->execute($this->fields);
     
         $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         return array_map(fn($row) => static::mapToObject($row), $data);
     }
 

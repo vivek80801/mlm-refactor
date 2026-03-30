@@ -6,7 +6,7 @@ use App\Core\Models;
 
 class  Bonus extends Models
 {
-    protected static string $table = 'bonuss';
+    protected static string $table = 'bonus';
 
     protected array $fillable = [
         "bonus_type",

@@ -52,6 +52,7 @@ class ErrorHandler implements ErrorHandlerInterface
 
     public function log(string $errorMessage): void
     {
+        // Setting up Indian Time Zone
         date_default_timezone_set('Asia/Kolkata');
         $date = new DateTime();
         $formatedDate = $date->format("d-m-Y");

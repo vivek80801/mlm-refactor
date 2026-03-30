@@ -4,8 +4,8 @@ namespace App\Controllers;
 
 use App\Core\Controller;
 use App\Core\Request;
-use App\Models\Product;
 use App\Services\ProductService;
+use Throwable;
 
 class  ProductsController extends Controller
 {
@@ -32,8 +32,8 @@ class  ProductsController extends Controller
         $productId = $request->input("id");
         $productDetail = $this->productService
             ->productDetail(
-                $productId,
-                $request->session()->get("id"),
+                (int) $productId,
+                (int) $request->session()->get("id"),
             );
 
         return view("product_detail",  $productDetail );
@@ -44,6 +44,36 @@ class  ProductsController extends Controller
         Request $request
     ): mixed
     {
-        dd($request);
+        try{
+            $productId = $request
+                ->input("product_id");
+
+            $this->productService
+                ->productRental(
+                    (int) $productId,
+                    (int) $request->session()->get("id"),
+                    $request->session()->get("invite_code"),
+                );
+        }catch(Throwable $e) {
+            $productDetail = $this->productService
+                ->productDetail(
+                    (int) $productId,
+                    (int) $request->session()->get("id"),
+                );
+
+            $productDetailWithErrors = array_merge(
+                ["errors" => $e->getMessage()],
+                $productDetail
+            );
+
+            return view(
+                "product_detail",
+                $productDetailWithErrors
+            );
+        }
+
+        return redirect(
+            "/product_detail?id=" . $productId
+        );
     }
 }
