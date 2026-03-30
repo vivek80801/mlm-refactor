@@ -88,7 +88,7 @@ class ProductService
 
             if(
                 (int) $userWallet->amount > 0 &&
-                (int) $userWallet->amount > $product->price
+                (int) $userWallet->amount >= $product->price
             )
             {
                 ProductPurchase::transaction(
@@ -196,7 +196,6 @@ class ProductService
         int $count = 0
     ):void
     {
-        $names = "abcdefghijklmnopqrstuvwxyz";
         $group = User::sql(
             "SELECT
             r.*, u.*, u.id as user_id, w.*, w.id as wallet_id
@@ -215,7 +214,7 @@ class ProductService
         }
 
         if(
-            (float) $commissions[$count]["commission"] <= (float) 0
+            (float) $commissions[$count]["commission"] >= (float) 0
         )
         {
             $groupWalletAmount = (float) $group["amount"]
