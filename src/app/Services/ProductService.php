@@ -184,7 +184,7 @@ class ProductService
                 throw new AppException("Error: Insificient Balance");
             }
         }catch(Throwable $e){
-            throw new AppException("Error: " . $e->getLine() . ":" .  $e->getMessage(). "  -> ". $e->getTraceAsString());
+            throw new AppException("Error: " . $e->getLine());
         }
     }
 
