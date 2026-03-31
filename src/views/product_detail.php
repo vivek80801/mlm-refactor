@@ -1,7 +1,7 @@
 <?php include_once viewPath() . 'layouts/header.php'  ?>
 <?php
     $product = $data["product"];
-    $is_hero_purchased_product = $data["is_hero_purchased_product"];
+    $is_hero_purchased_product = $data["is_product_can_be_purchased"];
 ?>
 <div class="container my-3">
     <form method="post" action="/product_rental" >

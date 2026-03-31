@@ -6,7 +6,7 @@ use App\Core\Controller;
 
 class  DashboardController extends Controller
 {
-    public function index(): mixed
+    public function index(): null
     {
         return view("dashboard");
     }

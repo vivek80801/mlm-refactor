@@ -22,4 +22,6 @@ interface ModelsInterface
         mixed $value
     ): static;
     public function get(): array;
+    public function first(): ?static;
+    public function exists(): bool;
 }

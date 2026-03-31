@@ -132,7 +132,8 @@ abstract class Models implements ModelsInterface
         }else {
             $data = $stmt->fetch(PDO::FETCH_ASSOC);
         }
-        return $data;
+        
+        return is_array($data) ? $data : [];
     }
 
     public static function query(): static
@@ -240,5 +241,59 @@ abstract class Models implements ModelsInterface
         {
             $pdo->rollBack();
         }
+    }
+
+    /**
+    * @return array<Models>
+    */
+    public static function all(): array
+    {
+         $rows = static::sql("SELECT * FROM " . static::$table, "multi");
+
+        return array_map(fn($row) => static::mapToObject($row), $rows);
+    }
+
+    public function exists(): bool
+    {
+        $pdo = DataBase::getConnection();
+    
+        $sql = "SELECT 1 FROM " . static::$table;
+    
+        if (!empty($this->fields)) {
+            $conditions = [];
+            foreach ($this->fields as $key => $value) {
+                $conditions[] = "$key = :$key";
+            }
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+    
+        $sql .= " LIMIT 1";
+    
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($this->fields);
+    
+        return (bool) $stmt->fetchColumn();
+    }
+
+    public function first(): ?static
+    {
+        $pdo = DataBase::getConnection();
+    
+        $sql = "SELECT * FROM " . static::$table;
+    
+        if (!empty($this->fields)) {
+            $conditions = [];
+            foreach ($this->fields as $key => $value) {
+                $conditions[] = "$key = :$key";
+            }
+            $sql .= " WHERE " . implode(" AND ", $conditions);
+        }
+    
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($this->fields);
+    
+        $data = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+        return $data ? static::mapToObject($data) : null;
     }
 }
